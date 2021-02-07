@@ -65,4 +65,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Unlike::class);
     }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
+    public function receivedLikes()
+    {
+        return $this->hasManyThrough(Like::class, Post::class);
+    }
 }
