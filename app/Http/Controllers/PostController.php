@@ -7,16 +7,16 @@ use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-public function __construct()
-{
-    $this->middleware('auth');
-}
+    public function __construct()
+    {
+        $this->middleware('auth')->only('store', 'destroy');
+    }
 
     public function index()
     {
 
         return view('posts.index', [
-            'posts' => Post::with('user')->latest()->paginate(20) // eager loading
+            'posts' => Post::latest()->with('user', 'likes', 'unlikes')->paginate(20) // eager loading
         ]);
     }
 
@@ -34,5 +34,18 @@ public function __construct()
         $post->save();
         //redirect
         return redirect()->route('posts');
+    }
+
+    /**
+     * @param Post $post
+     * @return \Illuminate\Http\RedirectResponse
+     * @throws \Exception
+     */
+    public function destroy(Post $post)
+    {
+        $this->authorize('delete', $post);
+        $post->delete();
+        return back();
+
     }
 }

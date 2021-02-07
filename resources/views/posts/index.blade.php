@@ -3,6 +3,7 @@
 @section('content')
     <div class="flex justify-center">
         <div class="w-8/12 bg-white p-6 rounded-lg">
+            @auth
             <form action="{{route('posts')}}" method="post" class="mb-4">
                 @csrf
                 <div class="mb-4">
@@ -23,6 +24,8 @@
                 </div>
             </form>
 
+            @endauth
+
             @if($posts->count())
                 @foreach($posts as $post)
                     <div class="mb-4 p-4  border-dashed border-2 border-light-blue-500">
@@ -30,21 +33,35 @@
                            {{$post->body}}
                        </p>
                         <div class="mt-2">
-                            <a href="" class="text-gray-400 font-bold text-sm "> {{$post->user->username}} </a>
+                            <a href="{{route('users.posts', $post->user)}}" class="text-gray-400 font-bold text-sm ">
+                                {{$post->user->username}} </a>
                             <time datetime="{{$post->created_at->toW3cString()}}" class="px-2 text-gray-600 text-sm">
                                 {{ $post->created_at->diffForHumans() }}
                             </time>
+                            @auth
+                                @can('delete', $post)
+                                <form action="{{route('posts.destroy', $post)}}" method="post">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="bg-red-400 mt-2 text-white p-1 rounded
+                                        text-xs">Delete</button>
+                                </form>
+                                @endcan
+                            @endauth
                         </div>
                         <div class="flex items-center mt-2">
-                            @if(! $post->likedBy( auth()->user() ))
-                            <form action="{{route('posts.likes', $post->id)}}" method="post" class="mr-1">
-                                @csrf
-                                <button type="submit" class="text-blue-400">
-                                    <i class="fas fa-thumbs-up relative"></i>
-                                </button>
-                            </form>
+                            @auth
+                                @if(! $post->likedBy( auth()->user() ))
+                                <form action="{{route('posts.likes', $post->id)}}" method="post" class="mr-1">
+                                    @csrf
+                                    <button type="submit" class="text-blue-400">
+                                        <i class="fas fa-thumbs-up relative"></i>
+                                    </button>
+                                </form>
                             @endif
+                            @endauth
 
+                            @auth
                             @if(! $post->unlikedBy( auth()->user() ))
                             <form action="{{route('posts.unlikes', $post->id)}}" method="post" class="mr-1 px-3">
                                 @csrf
@@ -53,6 +70,8 @@
                                 </button>
                             </form>
                             @endif
+
+                            @endauth
 
                             @if($post->likes->count() > 0)
                                <span class="text-gray-600">{{$post->likes->count()}} {{-- {{Str::plural('like', $post->likes->count())
